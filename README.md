@@ -1,11 +1,7 @@
-calendar
+mui calendar
 ======
 
-该日历组件适用于移动web端开发，轻量简洁，灵活配置，如项目中使用jqmobi或zepto作为底层库，可直接使用。提供基础的样式选择，为满足具体使用场景，可在此基础上对样式做定制修改。
-
-[先点击查看demo](http://zhangchen2397.github.io/calendar/demo/) (建议扫描下方二维码手机上体验效果更佳)
-
-![qr code](http://zhangchen2397.github.io/calendar/demo/images/qr_code.png)
+该日历组件适用于mui框架下开发，轻量简洁，灵活配置，提供基础的样式选择，为满足具体使用场景，可在此基础上对样式做定制修改。
 
 ###组件主要功能
 1. 日历范围选择，不在范围内的日期置灰

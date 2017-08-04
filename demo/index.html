@@ -46,38 +46,37 @@
     </P>
 </div>
 
-<script src="./js/jqmobi.js"></script>
+<script src="./js/mui.min.js"></script>
 <script src="../calendar.js"></script>
 
 <script>
-    (function() {
-        calendarIns = new calendar.calendar( {
-            count: 4,
-            selectDate: new Date(),
-            selectDateName: '入住',
-            minDate: new Date(),
-            maxDate: new Date( +new Date() + 100 * 86400000 ),
-            isShowHoliday: true,
-            isShowWeek: false
-        } );
-
-        $.bind( calendarIns, 'afterSelectDate', function( event ) {
-            console.log( 'after select date' );
-            var curItem = event.curItem,
-                date = event.date,
-                dateName = event.dateName;
-
-            calendarIns.setSelectDate( date );
-        } );
-
-        $( '#prevMonth' ).on( 'click', function() {
-            calendarIns.prevMonth();
-        } );
-
-        $( '#nextMonth' ).on( 'click', function() {
-            calendarIns.nextMonth();
-        } );
-    })();
+	var calendarIns = null;
+    (function($) {
+    	$.init();
+    	$.ready(function(){
+    		calendarIns = new calendar.calendar( {
+	            count: 4,
+	            selectDate: new Date(),
+	            selectDateName: '出发',
+	            minDate: new Date(),
+	            maxDate: new Date( +new Date() + 100 * 86400000 ),
+	            isShowHoliday: true,
+	            isShowWeek: false
+	        } );
+	
+	        calendarIns.afterSelectDate = function( e ) {
+	            console.log( 'after select date: ' + JSON.stringify(e) );
+	        };
+	        
+	        document.getElementById('prevMonth').addEventListener( 'tap', function() {
+	            calendarIns.prevMonth();
+	        } );
+	
+	        document.getElementById('nextMonth').addEventListener( 'tap', function() {
+	            calendarIns.nextMonth();
+	        } );
+    	});
+    })(mui);
 </script>
 
 </body>

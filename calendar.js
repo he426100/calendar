@@ -22,13 +22,13 @@
 
 ( function( root, factory ) {
     if ( typeof define === 'function' ) {
-        define( 'calendar', [ 'jqmobi' ], function( $ ) {
+        define( 'calendar', [ 'mui' ], function( $ ) {
             return factory( root, $ );
         } );
     } else {
-        root.calendar = factory( root, root.$ );
+        root.calendar = factory( root, root.mui );
     }
-} )( window, function( root, $ ) {
+} )( window, function( root, $) {
 
     var util = {
         /**
@@ -202,7 +202,7 @@
         this.defaultConfig = {
             /**
              * 日历外层容器ID
-             * type {string|jq object} id字符串或jq对象
+             * type {string|object} id字符串或dom对象
              */
             el: '#calendar',
 
@@ -255,7 +255,7 @@
         };
 
         this.config = $.extend( {}, this.defaultConfig, config || {} );
-        this.el = ( typeof this.config.el === 'string' ) ? $( this.config.el ) : this.config.el;
+        this.el = ( typeof this.config.el === 'string' ) ? document.querySelector( this.config.el ) : this.config.el;
 
         this.init.call( this );
     };
@@ -263,7 +263,7 @@
     $.extend( calendar.prototype, {
         init: function() {
             this._initDate();
-            this.render( this.config.date );
+            this.render();
             this._initEvent();
         },
 
@@ -274,6 +274,7 @@
                 dateToNum = util.dateToNum;
 
             //初始化日历年月
+            this.date = dateObj;
             this.year = dateObj.getFullYear();
             this.month = dateObj.getMonth() + 1;
 
@@ -286,15 +287,13 @@
         },
 
         /**
-         * 根据日期对象渲染日历
-         * @para {date object} 日期对象
+         * 渲染日历
          */
-        render: function( date ) {
+        render: function() {
             var me = this,
                 config = this.config,
-                date = date || config.date,
-                year = date.getFullYear(),
-                month = date.getMonth() + 1,
+                year = this.date.getFullYear(),
+                month = this.date.getMonth() + 1,
                 tmpTplArr = [];
 
             for ( var i = 0; i < config.count; i++ ) {
@@ -315,7 +314,7 @@
                 tmpTplArr.push( curTpl );
             }
 
-            this.el.html( tmpTplArr.join( '' ) );
+            this.el.innerHTML = tmpTplArr.join( '' ) ;
 
             this.setSelectDate( this.selectDate );
         },
@@ -324,20 +323,17 @@
             var me = this,
                 config = this.config;
 
-            this.el.delegate( 'ul.day li', 'click', function( event ) {
-                var curItem = $( this ),
-                    date = curItem.data( 'date' ),
-                    dateName = $( curItem.find( 'i' )[ 1 ] ).text();
+            mui(this.el).on('tap', 'ul.day li', function( event ) {
+                var curItem = this,
+                    date = curItem.getAttribute( 'data-date' ),
+                    dateName = curItem.querySelectorAll( 'i' )[ 1 ].innerText;
 
                 //更新当前选中日期YYYY-MM-DD
-                me.selectDate = date;
+                me.selectDate = new Date(date);
 
-                if ( !curItem.hasClass( 'iv' ) ) {
-                    $.trigger( me, 'afterSelectDate', [ {
-                        date: date,
-                        dateName: dateName,
-                        curItem: curItem
-                    } ] );
+                if ( !curItem.classList.contains( 'iv' ) ) {
+                	me.setSelectDate( date );
+                    me.afterSelectDate && me.afterSelectDate (util.formatDate(me.selectDate));
                 }
             } );
         },
@@ -450,41 +446,43 @@
                 date = ( typeof date == 'string' ) ? date : util.formatDate( date ),
                 dateNum = util.dateToNum( date ),
 
-                lastSltItem = this.el.find( 'li.cur' ),
-                curSltItem = $( this.el[ 0 ].querySelector( 'li[data-date="' + date + '"]' ) );
+                lastSltItem = this.el.querySelector( 'li.cur' ),
+                curSltItem = this.el.querySelector( 'li[data-date="' + date + '"]' );
 
             //先移到上次选中日期高亮
-            if ( lastSltItem.length ) {
-                var lastDateNameEl = $( lastSltItem.find( 'i' )[ 1 ] );
+            if ( lastSltItem ) {
+                var lastDateNameEl = lastSltItem.querySelectorAll( 'i' )[ 1 ];
 
-                lastSltItem.removeClass( 'cur' );
-                if ( !lastSltItem.hasClass( 'jr' ) ) {
-                    lastSltItem.removeClass( 'dl' );
-                    lastDateNameEl.text( '' );
+                lastSltItem.classList.remove( 'cur' );
+                if ( !lastSltItem.classList.contains( 'jr' ) ) {
+                    lastSltItem.classList.remove( 'dl' );
+                    lastDateNameEl.innerText = '';
                 }
             }
 
             //添加当前选中日期高亮
-            if ( curSltItem.length ) {
-                var curDateNameEl = $( curSltItem.find( 'i' )[ 1 ] );
+            if ( curSltItem ) {
+                var curDateNameEl = curSltItem.querySelectorAll( 'i' )[ 1 ];
 
-                curSltItem.addClass( 'cur' );
-                if ( !curSltItem.hasClass( 'jr' ) ) {
-                    curSltItem.addClass( 'dl' );
-                    curDateNameEl.text( config.selectDateName );
+                curSltItem.classList.add( 'cur' );
+                if ( !curSltItem.classList.contains( 'jr' ) ) {
+                    curSltItem.classList.add( 'dl' );
+                    curDateNameEl.innerText = config.selectDateName;
                 }
             }
         },
 
         nextMonth: function() {
             var step = this.step;
-            this.render( new Date( this.year, this.month + step - 1, 1 ) );
+            this.date = new Date( this.year, this.month + step - 1, 1 );
+            this.render();
             this.month += step;
         },
 
         prevMonth: function() {
             var step = this.step;
-            this.render( new Date( this.year, this.month - step - 1, 1 ) );
+            this.date = new Date( this.year, this.month - step - 1, 1 );
+            this.render();
             this.month -= step;
         },
 
@@ -496,6 +494,14 @@
         hide: function() {
             this.el.hide();
             $.trigger( this, 'hide' );
+        },
+        
+        getDate: function(){
+        	return util.formatDate(this.date);
+        },
+        
+        getSelectDate: function(){
+        	return util.formatDate(this.selectDate);
         }
     } );
 
