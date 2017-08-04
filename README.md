@@ -78,6 +78,7 @@ this.defaultConfig = {
  * @method show 显示日历
  * @method hide 隐藏日历
  * @method setSelectDate 设置当前选中日期
+ * @method getSelectDate 获取当前选中日期
 
  * @customEvent selectDate 选择日期时派发事件
  * @customEvent show 显示日历时派发事件
@@ -150,32 +151,10 @@ util.formatDate( new Date );
 
     /**
      * 绑定选择日期后的事件
-     * event {type object}
-     * event.curItem 当前选中的dom对象
-     * event.date 当前选中的日期
-     * event.dateName 当前选中的日期对应的节假日，如没有则为空
+     * e {string}
      */
-    $.bind( calendarIns, 'afterSelectDate', function( event ) {
-        var curItem = event.curItem,
-            date = event.date,
-            dateName = event.dateName;
-
-        /**
-         * 设置当前选中日期
-         * @para {date object|date string}
-         * 如date为日期字符串，格式为YYYY-MM-DD
-         */
-        calendarIns.setSelectDate( date );
-    } );
-
-    $( '#prevMonth' ).on( 'click', function() {
-        //下一月，步长为初始化时的日历个数
-        calendarIns.prevMonth();
-    } );
-
-    $( '#nextMonth' ).on( 'click', function() {
-        //上一月，步长为初始化时的日历个数
-        calendarIns.nextMonth();
-    } );
+    calendarIns.afterSelectDate = function( e ) {
+        console.log( 'after select date: ' + e );
+    };
 } )();
 ```
