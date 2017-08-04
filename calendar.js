@@ -239,7 +239,7 @@
              * 选中日期时日期下方文案
              * type {string}
              */
-            selectDateName: '入住',
+            selectDateName: '',
 
             /**
              * 是否显示节假日
@@ -465,7 +465,7 @@
                 var curDateNameEl = curSltItem.querySelectorAll( 'i' )[ 1 ];
 
                 curSltItem.classList.add( 'cur' );
-                if ( !curSltItem.classList.contains( 'jr' ) ) {
+                if ( !curSltItem.classList.contains( 'jr' ) && config.selectDateName != '') {
                     curSltItem.classList.add( 'dl' );
                     curDateNameEl.innerText = config.selectDateName;
                 }
