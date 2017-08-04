@@ -157,4 +157,6 @@ util.formatDate( new Date );
         console.log( 'after select date: ' + e );
     };
 } )();
+
+感谢 [https://github.com/zhangchen2397/calendar](https://github.com/zhangchen2397/calendar)
 ```
