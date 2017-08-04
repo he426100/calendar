@@ -52,7 +52,7 @@ this.defaultConfig = {
      * 选中日期时日期下方文案
      * type {string}
      */
-    selectDateName: '入住',
+    selectDateName: '',
 
     /**
      * 是否显示节假日
