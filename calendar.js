@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 移动webapp开发 日历组件
  * 可用于需要日历选择的场景
  *  - 日历范围选择
@@ -92,7 +92,12 @@
 
             return rst;
         },
-
+		
+		numToDate: function( num ) {
+			var str = num.toString();
+			return str.substr(0, 4) + '-' + str.substr(4, 2) + '-' + str.substr(6);
+		},
+		
         /**
          * 格式化日期对象
          * @para {date object} 日期对象
@@ -240,7 +245,13 @@
              * type {string}
              */
             selectDateName: '',
-
+			
+			/**
+			 * 第二个选中项
+			 */
+			secondDate: null,
+			secondDateName: '',
+			
             /**
              * 是否显示节假日
              * type {boolean}
@@ -281,9 +292,14 @@
             this.minDate = config.minDate;
             this.maxDate = config.maxDate;
             this.selectDate = config.selectDate;
+            this.secondDate = config.secondDate;
 
             //上下月切换步长，根据初始化日历个数决定
             this.step = config.count;
+            this.selectStep = 0;
+            this.selectKeys = ['selectDate', 'secondDate'];
+            this.selectKey = this.selectKeys[0];
+            this.selectNames = [config.selectDateName, config.secondDateName];
         },
 
         /**
@@ -315,7 +331,6 @@
             }
 
             this.el.innerHTML = tmpTplArr.join( '' ) ;
-
             this.setSelectDate( this.selectDate );
         },
 
@@ -326,16 +341,23 @@
             mui(this.el).on('tap', 'ul.day li', function( event ) {
                 var curItem = this,
                     date = curItem.getAttribute( 'data-date' ),
-                    dateName = curItem.querySelectorAll( 'i' )[ 1 ].innerText;
+                    dateName = curItem.querySelectorAll( 'i' )[ 1 ].innerText,
+                	lastSltItems = me.el.querySelectorAll( 'li.cur' );
 
                 //更新当前选中日期YYYY-MM-DD
-                me.selectDate = new Date(date);
+                me.selectStep = lastSltItems.length == 1 && util.dateToNum(date) > util.dateToNum(me.selectDate) && me.secondDate != null ? 1 : 0;
+                me.selectKey = me.selectKeys[me.selectStep];
+               	me[me.selectKey] = new Date(date);
 
                 if ( !curItem.classList.contains( 'iv' ) ) {
-                	me.setSelectDate( date );
-                    me.afterSelectDate && me.afterSelectDate (util.formatDate(me.selectDate));
+                	if (me.selectKey == 'selectDate') { 
+                    	me.afterSelectDate && me.afterSelectDate (util.formatDate(me.selectDate));
+                    } else {
+                   		me.afterSecondDate && me.afterSecondDate (util.formatDate(me.secondDate));
+                    }
+                    me.setSelectDate( date );
                 }
-            } );
+            });
         },
 
         /**
@@ -446,18 +468,15 @@
                 date = ( typeof date == 'string' ) ? date : util.formatDate( date ),
                 dateNum = util.dateToNum( date ),
 
-                lastSltItem = this.el.querySelector( 'li.cur' ),
+                lastSltItems = this.el.querySelectorAll( 'li.cur' ),
                 curSltItem = this.el.querySelector( 'li[data-date="' + date + '"]' );
-
+			
             //先移到上次选中日期高亮
-            if ( lastSltItem ) {
-                var lastDateNameEl = lastSltItem.querySelectorAll( 'i' )[ 1 ];
-
-                lastSltItem.classList.remove( 'cur' );
-                if ( !lastSltItem.classList.contains( 'jr' ) ) {
-                    lastSltItem.classList.remove( 'dl' );
-                    lastDateNameEl.innerText = '';
-                }
+            if (lastSltItems.length > 0) {
+            	if (this.selectStep == 0) {
+            		this._removeCur(lastSltItems[0]);
+            		this._removeCur(lastSltItems[1]);
+            	}
             }
 
             //添加当前选中日期高亮
@@ -465,13 +484,47 @@
                 var curDateNameEl = curSltItem.querySelectorAll( 'i' )[ 1 ];
 
                 curSltItem.classList.add( 'cur' );
-                if ( !curSltItem.classList.contains( 'jr' ) && config.selectDateName != '') {
+                var nameIndex = this.selectKey == 'secondDate' ? 1 : 0;
+                if ( !curSltItem.classList.contains( 'jr' ) && this.selectNames[nameIndex] != '') {
                     curSltItem.classList.add( 'dl' );
-                    curDateNameEl.innerText = config.selectDateName;
+                    curDateNameEl.innerText = this.selectNames[nameIndex];
                 }
             }
+            
+            this._setSecondColor();
         },
-
+		
+		_removeCur: function(item) {
+			if (!item) {
+				return ;
+			}
+			var itemEl = item.querySelectorAll( 'i' )[ 1 ];
+            item.classList.remove( 'cur' );
+            if ( !item.classList.contains( 'jr' ) ) {
+                item.classList.remove( 'dl' );
+                itemEl.innerText = '';
+            }
+		},
+		
+		/**
+		 * 设置从起始日期到结束日期之间的选中项
+		 */
+		_setSecondColor: function() {
+			var lastSltItems = this.el.querySelectorAll( 'li.cur' ), oldLoads = this.el.querySelectorAll( 'li.load' ), curSltItem = null, curDateNameEl = null;
+			for (var i = 0, j = oldLoads.length; i<j; i++) {
+				oldLoads[i].classList.remove('load');
+			}
+			if (lastSltItems.length != 2) {
+				return;
+			}
+			for (var i = util.dateToNum(this.selectDate), j = util.dateToNum(this.secondDate); i < j; i++) {
+				curSltItem = this.el.querySelector( 'li[data-date="' + util.numToDate(i) + '"]' );
+				if ( curSltItem ) {
+                	curSltItem.classList.add('load');
+               	}
+			}
+		},
+		
         nextMonth: function() {
             var step = this.step;
             this.date = new Date( this.year, this.month + step - 1, 1 );
